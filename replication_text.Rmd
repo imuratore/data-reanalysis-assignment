@@ -18,8 +18,8 @@ library(knitr)
 
 # Replication of figures 1, 3, and 4 (and Table 1) of "Gene expression patterns associated with caste and reproductive status in ants: worker-specific genes are more derived than queen-specific ones" by Feldmeyer, Elsner, and Foitzik, 2013
 
-## This paper involved sequencing total RNA from four different phenotypes of female ant that occur in colonies of *Temnothorax longispinosus* 
-## This is interesting because ant colonies are composed of one or more queens and their numerous worker offspring, who are usually full-, or sometimes half-sibs in terms of parentage but who actually share 75% as opposed to 50% of their DNA with full-sibs due to haplodiploidy in ants. Nonetheless, these nearly identical genomes produce extremely different looking and behaving phenotypes.
+## This paper involved sequencing total RNA from four different phenotypes of female ants that occur in colonies of *Temnothorax longispinosus* 
+## This is interesting because ant colonies are composed of one or more queens and their numerous worker offspring, who are usually full-, or sometimes half-sibs in terms of parentage but who actually share 75% as opposed to 50% of their DNA with full-sibs due to haplodiploidy in ants. Nonetheless, these nearly identical genomes produce extremely different looking and behaving phenotypes, presumably based on patterns of gene expression.
 
 ###I downloaded the gene expression spreadsheet they published and converted to csv. To do this had to combine two different sheets, one with just the expression values, and one with the p and fold change values, within the overall excel file so I could just use the one csv for all analyses.
 
@@ -30,7 +30,9 @@ a <- read.csv("mec12490-sup-0005-TableS3.csv", header = TRUE, sep = ",", strings
 head(a)
 
 ```
-## The four sampled categories of female are called queen, fertile (worker), infertile (worker), and forager (worker). The columns with those names display the reads-per-mapped-kilobase normalized expression values for the gene in each row. The columns including the word "fold" are the fold change between two categories that were compared according to their expression values. The columns containing "p" are the false discovery rate-corrected p values from Z tests comparing the expression values. The typical cutoff for significance many people (and these authors) use for gene expression is p < 0.05 and fold change > 2.  
+## The four sampled categories of female are called queen, fertile (worker), infertile (worker), and forager (worker). The columns with those names display the reads-per-mapped-kilobase normalized expression values for the gene in each row. The columns including the word "fold" are the fold change between two categories that were compared according to their expression values. The columns containing "p" are the false discovery rate-corrected p values from Z tests comparing the expression values. The typical cutoff for significance many people (and these authors) use for gene expression is p < 0.05 and fold change > 2. A spreadsheet like this is produced series command-line based bioinformatics packages such as Tuxedo, which estimate expression levels for genes based on the population of sequence fragments resulting from sequencing that map to the gene in question. Because fragments are typically shorter than genes, complex statistics are used to estimate gene copy number (expression level) based on the makeup of the fragment population.
+
+###Here I am renaming some of the columns for ease of use.
 
 ```{r}
 
@@ -63,9 +65,12 @@ names(a)
 
 # Figure 1a, NMDS plot
 
+### as published
 <img src="img/fig1a.png" width="500px"/>
 
 ## In this NMDS plot, all the genes that are significantly differentially expressed (p < 0.05 and fold change > 2) are plotted in four dimensions based on the four expression values each gene has for the four categories sampled, in a manner that should minimize "stress", or how hard it is for the compressed 2D plot to accurately depict the distances between the points. However, this NMDS particular plot does not result in finding a real minimum. The algorithm finds a somewhat low stress value to settle at but does not establish it as a minimum.
+
+## The purpose of this figure is to illustrate any distinctive clusters of genes that appear, indicating differences in gene expression patterns associated with each phenotype. The distance between the red labels, which are actually calculated as "species scores", or weighted averages for all the expression values belonging to that category, illustrate roughly how different the sampled females are from each other under this mode of analysis.
 
 ```{r}
 
@@ -90,9 +95,11 @@ s <- mutate(b) %>% select(queen, fertile, infertile, forager)
 
 
 ```
+### When I filtered for genes that had p<0.05 and fc>2 for at least one of the six pairwise comparisons, I obtained an NMDS plot almost identical to the published version, except that it was rotated by a multiple of 90 degrees from the published orientation. This does not reflect any meaningful difference.
 
 # Figure 1b, Venn diagram
 
+### as published
 <img src="img/fig1b.png" width="500px"/>
 
 ## This Venn diagram is supposed to show the subsets of diffentially expressed genes that were expressed in the four different categories and how these lists overlap.
@@ -136,6 +143,7 @@ venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonze
 
 # Figure 3a, pairwise pie
 
+### as published
 <img src="img/fig3a.png" width="500px"/>
 
 ## This pie should show the subsets of differentially expressed genes that are statistically different based on p value and fold change between the different pairwise comparisons that can be made. 
@@ -169,9 +177,10 @@ pie(slices,labels = lbls, col=rainbow(length(lbls)),
 
 # Figure 3b, up-regulated pie
 
+### as published
 <img src="img/fig3b.png" width="500px"/>
 
-## This pie should show the subsets of differentially expressed genes that are uniquely upregulated in one category relative to all the others. 
+## This pie should show the subsets of differentially expressed genes that are uniquely upregulated in one category relative to all the others. These would suggest that these genes are fundementally important for creating the unique phenotype in question, probably being necessarily for developping certain structures needed for its behavior and role. 
 
 ```{r}
 
@@ -215,13 +224,17 @@ pie(slices,labels = lbls, col=rainbow(length(lbls)),
 
 # Table 1, up-regulation table
 
+### as published
 <img src="img/table_1.png" width="500px"/>
 
-## This table shows "Number of significantly up-regulated genes (FDR-P < 0.05; fold change >2) in the focal caste in comparison withthe other castes and the number of pair-specific genes (genes up-regulated in only this specific comparison) with the corresponding percentage in parentheses"
+## This table shows "Number of significantly up-regulated genes (FDR-P < 0.05; fold change >2) in the focal caste in comparison withthe other castes and the number of pair-specific genes (genes up-regulated in only this specific comparison) with the corresponding percentage in parentheses."
+
+### Unlike the previous depictions of numbers of differentially expressed genes between phenotypes, this table illustrates both "directions" of the comparison to differentiate between genes upregulated in one of the two compared phenotypes vs. those upregulated in the other.
 
 
 ```{r}
 
+# I am filtering for p<0.05 and fc>2 for each pairwise comparison in both "directions", then editing the set down to only contain the column list of gene IDs.
 qfert <- filter(a, queenfertile_p<0.05 & queenfertile_fold>2)
 qfert <- mutate(qfert) %>% select(ID)
 
@@ -257,7 +270,8 @@ infertfor <- mutate(infertfor) %>% select(ID)
 
 forinfert <- filter(a, infertileforager_p<0.05 & infertileforager_fold < -2)
 forinfert <- mutate(forinfert) %>% select(ID)
-###
+
+#Now I am filtering for the subsets of these gene lists that only appear within that selected comparison and not in any of the others, using dplyr's setdiff function.
 q_fert <- dplyr::setdiff(qfert, union(fertq, qinfert, infertq, qfor, forq, fertinfert, infertfert, fertfor, forfert, infertfor, forinfert))
 fert_q <- dplyr::setdiff(fertq, union(qfert, qinfert, infertq, qfor, forq, fertinfert, infertfert, fertfor, forfert, infertfor, forinfert))
 q_infert <- dplyr::setdiff(qinfert, union(qfert, fertq, infertq, qfor, forq, fertinfert, infertfert, fertfor, forfert, infertfor, forinfert))
@@ -271,32 +285,40 @@ for_fert <- dplyr::setdiff(forfert, union(qfert, fertq, qinfert, infertq, qfor, 
 infert_for <- dplyr::setdiff(infertfor, union(qfert, fertq, qinfert, infertq, qfor, forq, fertinfert, infertfert, fertfor, forfert, forinfert))
 for_infert <- dplyr::setdiff(forinfert, union(qfert, fertq, qinfert, infertq, qfor, forq, fertinfert, infertfert, fertfor, forfert, infertfor))
 
+#This will be the row in the table showing the total genes that filtered as signficant for each pairwise comparison
+#Simultaneously, I am reording the gene sets to match the order in the published table
 Total <- c(nrow(qfert), nrow(qinfert), nrow(qfor), nrow(fertq), nrow(fertinfert), nrow(fertfor), nrow(infertfert), nrow(infertq), nrow(infertfor),nrow(forq), nrow(forfert), nrow(forinfert))
 
+#This will be the row in the table showing just the genes uniquely filtering into each pairwise comparison
 Pair_specific <- c(nrow(q_fert), nrow(q_infert), nrow(q_for), nrow(fert_q), nrow(fert_infert), nrow(fert_for), nrow(infert_fert), nrow(infert_q), nrow(infert_for),nrow(for_q), nrow(for_fert), nrow(for_infert))
 
+#This will be the the row showing what percent of each gene set is unique to that comparison by dividing one vector by the other
 Pair_specific_percent <- Pair_specific/Total
 
+#These vectors match the labels used in the published table
 Focal_caste <- c("Queen", "", "", "Fertile worker", "", "", "Infertile worker", "", "", "Forager", "", "")
 Comparison <- c("fer", "inf", "fer", "q", "inf", "for", "q", "fer", "for", "q", "fer", "inf")
 
 table1 <- data.frame(Focal_caste, Comparison, Total, Pair_specific, Pair_specific_percent)
 
+#kable function produces a pretty table
 knitr::kable(table1)
 
 ```
 
 # Figure 4, vitellogenin bar graph
 
+### as published
 <img src="img/fig4.png" width="500px"/>
 
-## Here the authors focus in on a small group of differentially expressed genes since they relate heavily to female ant phenotype. This graph shows expression of different copies of the vitellogenin protein and the vitellogenin receptor.
+## Here the authors focus in on a small group of differentially expressed genes since they relate heavily to female ant phenotype. Vitellogenenin is needed for producing eggs, so it is very relevant to reproductive status. This graph shows expression of different copies of the vitellogenin protein and the vitellogenin receptor.
 
-### I had to pull out the individual genes in question using their gene id as opposed to filtering for them in R using a keyword from their description. This was necessary because not all of these proteins can be found through text search for "vg" plus wildcards and not all can be found through text search for "vit" plus wildcards. Additionally, the authors did not use some genes whose descriptions contain these terms since they are just precursors to the proteins. There is not way to text filter by gene name or description for this set. You can only filter them using their specific IDs. 
+### I had to pull out the individual genes in question using their gene id as opposed to filtering for them in R using a keyword from their description. This was necessary because not all of these proteins can be found through text search for "vg" plus wildcards and not all can be found through text search for "vit" plus wildcards. Additionally, the authors did not use some of the genes whose descriptions contain these terms since they are just precursors to the proteins. There is not way to text filter by gene name or description for this set. You can only filter them using their specific IDs. 
 
 ### I melted my existing data frame to fit it into the format required for a ggplot grouped bar graph.
 
 ```{r}
+#selecting the vitellogenin genes that the authors focused on
 s <- filter(a, ID=="TlongiContigs_rep_c8852" | ID=="TlongiContigs_rep_c14651" | ID=="TlongiContigs_rep_c6184" | ID=="TlongiContigs_rep_c39314" | ID=="TlongiContigs_rep_c43820")
 
 #reordering to fit paper
@@ -304,7 +326,7 @@ levels(s$ID) <- c("TlongiContigs_rep_c8852", "TlongiContigs_rep_c14651", "Tlongi
 
 #the published figure contains significance groupings denoted by letters, so we should check the pairwise comparison p values to see whether the same groupings appear
 
-#for each gene I am extracting the p values to compare
+#for each gene I am extracting the p values to compare them
 Vg2 <- filter(s, ID=="TlongiContigs_rep_c8852") %>% select(ID, queenfertile_p, queeninfertile_p, queenforager_p, fertileinfertile_p, fertileforager_p, infertileforager_p)
 Vg2
 #every expression value is significantly different from the others
@@ -325,6 +347,7 @@ Vg6 <- filter(s, ID=="TlongiContigs_rep_c43820") %>% select(ID, queenfertile_p, 
 Vg6
 #queen and infertile values are not significantly different from each other; all others are significantly different
 
+#selecting just the lists of gene IDs
 s <- mutate(s) %>% select(ID, queen, fertile, infertile, forager)
 
 #reformatting
@@ -357,5 +380,6 @@ g <- g + annotate("text",x=4.81,y=74,label="b")+
   annotate("text",x=5.19,y=12,label="c")
 g  
 
-
 ```
+
+## Despite the many differences in numbers of genes in my attempts to replicate some of the figures, this figure perfectly matches the one in the paper. Over all, ambiguity in the language used to described what counted as differentially expressed genes for the purposes of different figure probably caused the differences; the exact similarity between the publihed and replicated versions of this figure (4) and the NMDS plot in figure 1 suggest that there was no "foul play" in the data analysis but that instead this paper suffers from a lack of detail in describing its methods. 
