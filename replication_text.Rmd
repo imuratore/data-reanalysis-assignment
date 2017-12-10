@@ -168,10 +168,26 @@ infertfor <- filter(a, infertileforager_p<0.05 & abs(infertileforager_fold)>2)
 infertfor <- mutate(infertfor) %>% select(ID)
 
 slices <- c(nrow(qfert), nrow(qinfert), nrow(qfor), nrow(fertinfert), nrow(fertfor), nrow(infertfor)) 
-lbls <- c("q vs. fer", "q vs. infer", "q vs. for", "fer vs. inf", "fer vs. for", "inf vs. for")
+lbls <- c("q vs. fer", "q vs. inf", "q vs. for", "fer vs. inf", "fer vs. for", "inf vs. for")
 lbls <- paste(lbls, slices) # add percents to labels 
-pie(slices,labels = lbls, col=rainbow(length(lbls)),
-  	main="Pie Chart of Pairwise Differences")
+
+blank_theme <- theme_minimal()+
+  theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.border = element_blank(),
+  panel.grid=element_blank(),
+  axis.ticks = element_blank(),
+  plot.title=element_text(size=14, face="bold")
+  )
+
+df <- data.frame(group = lbls, value = slices)
+
+bp<- ggplot(df, aes(x="", y=value, fill=group))+ geom_bar(width = 1, stat = "identity")+ scale_fill_manual(values = c("q vs. fer 2783" = "orange", "q vs. inf 2919" = "navy", "q vs. for 2721" = "yellow", "fer vs. inf 579" = "red", "fer vs. for 457" = "green", "inf vs. for 338" = "blue"))
+
+pie <- bp + coord_polar("y", start=45) + blank_theme + theme(axis.text.x=element_blank()) + geom_text(aes(x = 1.8, label = c("q vs. fer 2783", "q vs. inf 2919", "q vs. for 2721", "fer vs. inf 579", "fer vs. for 457", "inf vs. for 338")), size=3, position = position_stack(vjust = 0.5))
+pie
+
 
 ```
 
@@ -214,11 +230,17 @@ infert_up <- filter(a, fertileinfertile_p<0.05 & fertileinfertile_fold < -2 & qu
 
 for_up <- filter(a, infertileforager_p<0.05 & infertileforager_fold < -2 & fertileforager_p<0.05 & fertileforager_fold < -2 & queenforager_p<0.05 & queenforager_fold < -2)
 
-slices <- c(nrow(q_up), nrow(infert_up), nrow(for_up), nrow(fert_up)) 
-lbls <- c("q", "inf", "for", "fer")
+slices <- c(nrow(q_up), nrow(fert_up), nrow(infert_up), nrow(for_up)) 
+lbls <- c("q", "fer", "inf", "for")
 lbls <- paste(lbls, slices) # add percents to labels 
-pie(slices,labels = lbls, col=rainbow(length(lbls)),
-  	main="Pie Chart of Up-Regulated Genes")
+
+###
+df <- data.frame(group = lbls, value = slices)
+
+bp<- ggplot(df, aes(x="", y=value, fill=group))+ geom_bar(width = 1, stat = "identity")+ scale_fill_manual(values = c("q 380" = "blue", "fer 31" = "red", "inf 23" = "green", "for 16" = "purple"))
+
+pie <- bp + coord_polar("y", start=45) + blank_theme + theme(axis.text.x=element_blank()) + geom_text(aes(x = 1.6, label = c("q 380", "fer 31", "for 16", "inf 23")), size=3, position = position_stack(vjust = 0.5))
+pie
 
 ```
 
@@ -354,9 +376,7 @@ s <- mutate(s) %>% select(ID, queen, fertile, infertile, forager)
 new_melt <- melt(s, id.vars='ID')
 
 #gene expression is usually plotting by either log transforming the values or using a log scale, which is what the authors did. This is because values can vary by many orders of magnitude. 
-g <- ggplot(new_melt, aes(ID, value)) + geom_bar(aes(fill = variable), 
-   width = 0.4, position = position_dodge(width=0.5), stat="identity") + 
-scale_x_discrete(limits=c("TlongiContigs_rep_c8852", "TlongiContigs_rep_c14651", "TlongiContigs_rep_c6184", "TlongiContigs_rep_c39314", "TlongiContigs_rep_c43820"), labels=c("Vg2", "Vg3", "VgRec", "Vg1", "Vg6"), name="") + scale_y_log10(name="log RPKM") 
+g <- ggplot(new_melt, aes(ID, value)) + geom_bar(aes(fill = variable), color = "black", width = 0.4, position = position_dodge(width=0.5), stat="identity") + scale_fill_manual(values=c("blue", "red", "green", "purple")) + scale_x_discrete(limits=c("TlongiContigs_rep_c8852", "TlongiContigs_rep_c14651", "TlongiContigs_rep_c6184", "TlongiContigs_rep_c39314", "TlongiContigs_rep_c43820"), labels=c("Vg2", "Vg3", "VgRec", "Vg1", "Vg6"), name="") + scale_y_log10(name="log RPKM") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
 #adding in significance groupings based on analysis of p values
 g <- g + annotate("text",x=0.81,y=1550,label="a")+
   annotate("text",x=0.94,y=88,label="c")+
