@@ -104,13 +104,16 @@ s <- mutate(b) %>% select(queen, fertile, infertile, forager)
 
 ## This Venn diagram is supposed to show the subsets of diffentially expressed genes that were expressed in the four different categories and how these lists overlap.
 
-### The vegan package I (and the authors) used for the diagram outputs to a file, not directly to R, so I am embedding the resulting image.
+### The vegan package I (and the authors) used for the diagram outputs to a file, not directly to R, so I am embedding the resulting images below each attempt.
 
+### My attempts to replicate this figure differed significantly from the published version due to the ambiguous language used to describe the selection criteria. It should depict "patterns of private and shared differentially expressed genes". These categories are defined: "differentially expressed genes (DEGs),which are either shared between castes or specificallyexpressed in only a single caste (private genes)". We know from figure 1a that DEGs are defined by p<0.05 and fc>2. However, this definition is complicated when it comes to whether the significant differences need to appear for just one pairwise comparison or need to appear in all the pairwise comparisons in which one caste is involved. I tried variations on both these ideas. 
+
+### First, as in 1a, I first filtered all the DEGs in general, then filtered for which ones were expressed above zero in each caste to create the different Venn categories.
 ```{r}
-# attempt
-
+# filtering for DEGs based on having just one pairwise comparison qualify as significant
 b <- filter(a, queenfertile_p<0.05 & abs(queenfertile_fold)>2 | queeninfertile_p<0.05 & abs(queeninfertile_fold)>2 | queenforager_p<0.05 & abs(queenforager_fold)>2 | fertileinfertile_p<0.05 & abs(fertileinfertile_fold)>2 | fertileforager_p<0.05 & abs(fertileforager_fold)>2 | infertileforager_p<0.05 & abs(infertileforager_fold)>2)
 
+#filtering for DEGs expressed above 0 in each caste
 q_nonzero <- filter(a, queen != 0)
 q_nonzero <- mutate(q_nonzero) %>% select(ID)
 
@@ -123,14 +126,18 @@ infert_nonzero <- mutate(infert_nonzero) %>% select(ID)
 for_nonzero <- filter(a, forager != 0)
 for_nonzero <- mutate(for_nonzero) %>% select(ID)
 
-
+#creating the diagram
 venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonzero$ID, Infertile=infert_nonzero$ID), "replication_venn0.tiff", fill = c("blue", "red", "yellow", "green"), cex=1.5,cat.cex=1.8) 
 ```
 
 <img src="replication_venn0.tiff".png" width="500px"/>
 
+### This is VERY different from the published figure in that the most overlapping sections of the diagram have the highest numbers, with very few genes with the criteria used being expressed exclusively in individual castes. Therefore, I next tried testing for significance relative to the different categories in which each caste appeared; basically I filtered for significance relative to individual castes as opposed to in general. 
+
+### I first tried selected DEGs for each caste that had a least one caste-specific pairwise comparison
+
 ```{r}
-# attempt
+# filtering for at least one significant pairwise comparison for the set of comparisons involving the caste in question
 q_nonzero <- filter(a, queen != 0 & ( queenfertile_p<0.05 & abs(queenfertile_fold)>2 | queeninfertile_p<0.05 & abs(queeninfertile_fold)>2 | queenforager_p<0.05 & abs(queenforager_fold)>2))
 q_nonzero <- mutate(q_nonzero) %>% select(ID)
 
@@ -149,8 +156,12 @@ venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonze
 
 <img src="replication_venn1.tiff".png" width="500px"/>
 
+### This diagram looks more similar to my first attempt than to the one in the paper. There are still too many shared genes and not enough private genees.
+
+### I next tried selecting caste-specific DEGs as above except that they had to be significant for all pairwise comparisons involving the caste in question.
+
 ```{r}
-# SECOND CLOSEST
+# filtering for significance in all pairwise comparisons for the set of comparisons involving the caste in question
 q_nonzero <- filter(a, queen != 0 & queenfertile_p<0.05 & abs(queenfertile_fold)>2 & queeninfertile_p<0.05 & abs(queeninfertile_fold)>2 & queenforager_p<0.05 & abs(queenforager_fold)>2)
 q_nonzero <- mutate(q_nonzero) %>% select(ID)
 
@@ -169,8 +180,10 @@ venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonze
 
 <img src="replication_venn2.tiff".png" width="500px"/>
 
+### This attempt was more similar to the numbers in the published figure, but still off, so I also tried discarding the criterion of fc>2.
+
 ```{r}
-#CLOSEST
+# same filtering as above but only on the basis of p value
 q_nonzero <- filter(a, queen != 0 & queenfertile_p<0.05 & queeninfertile_p<0.05 & queenforager_p<0.05)
 q_nonzero <- mutate(q_nonzero) %>% select(ID)
 
@@ -188,6 +201,8 @@ venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonze
 ```
 <img src="replication_venn3.tiff".png" width="500px"/>
 
+### This version appears slightly more similar to the paper, although only for certain numbers. It is unclear which of my attempts best replicate the language used in describing the figure and it is unclear why many of these attempts are far off. 
+
 ### I did not replicate figure 2 because the vast majority of the process behind that graph was not done in R. It needs to be done using BLASTx rather than R. Unfortunately the authors did not publish the raw results of the BLAST they did. 
 
 # Figure 3a, pairwise pie
@@ -196,6 +211,8 @@ venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonze
 <img src="img/fig3a.png" width="500px"/>
 
 ## This pie should show the subsets of differentially expressed genes that are statistically different based on p value and fold change between the different pairwise comparisons that can be made. 
+
+### Again, my attempt here does not perfectly match the figure in the paper, although the pattern is similar. The language used in describing this figure is less ambiguous in my opinion, so I felt the only accurate way to filter would be to select genes with p<0.05 and fc>2 or fc<-2 (since a negative value would still be significant, just in the opposite direction; this was confirmed by the author) for the pairwise comparison in question.
 
 ```{r}
 qfert <- filter(a, queenfertile_p<0.05 & abs(queenfertile_fold)>2)
@@ -216,10 +233,12 @@ fertfor <- mutate(fertfor) %>% select(ID)
 infertfor <- filter(a, infertileforager_p<0.05 & abs(infertileforager_fold)>2)
 infertfor <- mutate(infertfor) %>% select(ID)
 
+#defining two vectors, one containing the number of genes filtered into each category, and one containing labels
 slices <- c(nrow(qfert), nrow(qinfert), nrow(qfor), nrow(fertinfert), nrow(fertfor), nrow(infertfor)) 
 lbls <- c("q vs. fer", "q vs. inf", "q vs. for", "fer vs. inf", "fer vs. for", "inf vs. for")
 lbls <- paste(lbls, slices) # add percents to labels 
 
+#defining a blank theme to use with the ggplot pie chart to remove the default extraneous visual features
 blank_theme <- theme_minimal()+
   theme(
   axis.title.x = element_blank(),
@@ -230,8 +249,10 @@ blank_theme <- theme_minimal()+
   plot.title=element_text(size=14, face="bold")
   )
 
+#creating a small data frame from the vectors above to hand to ggplot
 df <- data.frame(group = lbls, value = slices)
 
+#plotting by converting a stacked bar graph into a polar coordinate circle to act as a pie chart
 bp<- ggplot(df, aes(x="", y=value, fill=group))+ geom_bar(width = 1, stat = "identity")+ scale_fill_manual(values = c("q vs. fer 2783" = "orange", "q vs. inf 2919" = "navy", "q vs. for 2721" = "yellow", "fer vs. inf 579" = "red", "fer vs. for 457" = "green", "inf vs. for 338" = "blue"))
 
 pie <- bp + coord_polar("y", start=45) + blank_theme + theme(axis.text.x=element_blank()) + geom_text(aes(x = 1.8, label = c("q vs. fer 2783", "q vs. inf 2919", "q vs. for 2721", "fer vs. inf 579", "fer vs. for 457", "inf vs. for 338")), size=3, position = position_stack(vjust = 0.5))
@@ -240,6 +261,8 @@ pie
 
 ```
 
+### This pie chart is similar, but not identical to the published verion. However, the language did not seem to be able to be interpretted in any other way. Conversations with the authors confirmed that my interpretation of the fc criterion was correct. I did actually try to create this figure using only the p value criterion but it was even less accurate so I did not include it.
+
 # Figure 3b, up-regulated pie
 
 ### as published
@@ -247,8 +270,10 @@ pie
 
 ## This pie should show the subsets of differentially expressed genes that are uniquely upregulated in one category relative to all the others. These would suggest that these genes are fundementally important for creating the unique phenotype in question, probably being necessarily for developping certain structures needed for its behavior and role. 
 
-```{r}
+### The language for this figure is completely ambiguous. In the caption it is described as "Number of caste-specific genes that are up-regulated in a single caste in comparison with all other castes", but in the body of the paper it is described as "genes that are exclusively regulated differentially in a single caste incomparison with all three other castes". Note that the first description implies upregulation, while the second description implies differential regulation, either up or down. Based on talking with the author, I was advised that the correct interpretation was to filter for upregulated genes specifically. However I included figures made using both interpretations below. 
 
+```{r}
+# filtering for significance (up OR down regulation) in all pairwise comparisons for the set of comparisons involving the caste in question based on both p value and fc
 q_up <- filter(a, queenfertile_p<0.05 & abs(queenfertile_fold) > 2 & queeninfertile_p<0.05 & abs(queeninfertile_fold)>2 & queenforager_p<0.05 & abs(queenforager_fold)>2)
 
 fert_up <- filter(a, queenfertile_p<0.05 & abs(queenfertile_fold) < 2 & fertileinfertile_p<0.05 & abs(fertileinfertile_fold)>2 & fertileforager_p<0.05 & abs(fertileforager_fold)>2)
@@ -257,22 +282,27 @@ infert_up <- filter(a, fertileinfertile_p<0.05 & abs(fertileinfertile_fold) < 2 
 
 for_up <- filter(a, infertileforager_p<0.05 & abs(infertileforager_fold) < 2 & fertileforager_p<0.05 & abs(fertileforager_fold) < 2 & queenforager_p<0.05 & abs(queenforager_fold) < 2)
 
-###
-
+#defining two vectors, one containing the number of genes filtered into each category, and one containing labels
 slices <- c(nrow(q_up), nrow(fert_up), nrow(infert_up), nrow(for_up)) 
 lbls <- c("q", "fer", "inf", "for")
 lbls <- paste(lbls, slices) # add percents to labels 
 
+#creating a small data frame from the vectors above to hand to ggplot
 df <- data.frame(group = lbls, value = slices)
 
+#plotting by converting a stacked bar graph into a polar coordinate circle to act as a pie chart
 bp<- ggplot(df, aes(x="", y=value, fill=group))+ geom_bar(width = 1, stat = "identity")+ scale_fill_manual(values = c("q 1587" = "blue", "fer 11" = "red", "inf 6" = "green", "for 33" = "purple"))
 
 pie <- bp + coord_polar("y", start=45) + blank_theme + theme(axis.text.x=element_blank()) + geom_text(aes(x = 1.6, label = c("q 1587", "fer 11", "inf 6", "for 33")), size=3, position = position_stack(vjust = 0.5))
 pie
 ```
 
-```{r}
+### This interpretation produces a figure that is somewhat similar in pattern but still quite different from the published version, with the queen number being close to identical but the others nuumbers being very small.
 
+### I also tried filtering exclusively for upregulation relative to all other castes
+
+```{r}
+# filtering for significant upregulation in all pairwise comparisons for the set of comparisons involving the caste in question based on both p value and fc
 q_up <- filter(a, queenfertile_p<0.05 & queenfertile_fold>2 & queeninfertile_p<0.05 & queeninfertile_fold>2 & queenforager_p<0.05 & queenforager_fold>2)
 
 fert_up <- filter(a, queenfertile_p<0.05 & queenfertile_fold < -2 & fertileinfertile_p<0.05 & fertileinfertile_fold>2 & fertileforager_p<0.05 & fertileforager_fold>2)
@@ -295,6 +325,9 @@ pie <- bp + coord_polar("y", start=45) + blank_theme + theme(axis.text.x=element
 pie
 
 ```
+
+### The pattern in this figure is highly similar to the published figures but now all the numbers are too low. However, in my opinion there are no other sensible ways of interpretting the paper's instructions, and the methods I used for this second version were confirmed as correct by Barbara Feldmeyer. 
+
 
 # Table 1, up-regulation table
 
