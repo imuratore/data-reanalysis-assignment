@@ -86,17 +86,17 @@ b <- filter(a, queenfertile_p<0.05 & abs(queenfertile_fold)>2 | queeninfertile_p
 s <- mutate(b) %>% select(queen, fertile, infertile, forager)
 
 #performing nmds
-#s.mds <- metaMDS(s)
+s.mds <- metaMDS(s)
 
-#s.mds
+s.mds
 
 #plotting using points
-#plot(s.mds, type = "p")
+plot(s.mds, type = "p")
 
 #My NMDS plot is almost exactly the same as the published one, but mine is rotated in the opposite orientation
 
 #plotting using text to show that the red labels match up to their positions in the published figure.
-#plot(s.mds, type = "t")
+plot(s.mds, type = "t")
 
 
 ```
@@ -548,17 +548,18 @@ knitr::kable(table1)
 
 ### I had to pull out the individual genes in question using their gene id as opposed to filtering for them in R using a keyword from their description. This was necessary because not all of these proteins can be found through text search for "vg" plus wildcards and not all can be found through text search for "vit" plus wildcards. Additionally, the authors did not use some of the genes whose descriptions contain these terms since they are just precursors to the proteins. There is not way to text filter by gene name or description for this set. You can only filter them using their specific IDs. 
 
-### I melted my existing data frame to fit it into the format required for a ggplot grouped bar graph.
-
 ```{r}
 #selecting the vitellogenin genes that the authors focused on
 s <- filter(a, ID=="TlongiContigs_rep_c8852" | ID=="TlongiContigs_rep_c14651" | ID=="TlongiContigs_rep_c6184" | ID=="TlongiContigs_rep_c39314" | ID=="TlongiContigs_rep_c43820")
 
 #reordering to fit paper
 levels(s$ID) <- c("TlongiContigs_rep_c8852", "TlongiContigs_rep_c14651", "TlongiContigs_rep_c6184", "TlongiContigs_rep_c39314", "TlongiContigs_rep_c43820")
+```
 
-#the published figure contains significance groupings denoted by letters, so we should check the pairwise comparison p values to see whether the same groupings appear
 
+### The published figure contains significance groupings denoted by letters, so we should check the pairwise comparison p values to see whether the same groupings appear. I am doing this by pulling out the p values for the different comparisons for each gene. 
+
+```{r}
 #for each gene I am extracting the p values to compare them
 Vg2 <- filter(s, ID=="TlongiContigs_rep_c8852") %>% select(ID, queenfertile_p, queeninfertile_p, queenforager_p, fertileinfertile_p, fertileforager_p, infertileforager_p)
 Vg2
@@ -579,6 +580,11 @@ Vg1
 Vg6 <- filter(s, ID=="TlongiContigs_rep_c43820") %>% select(ID, queenfertile_p, queeninfertile_p, queenforager_p, fertileinfertile_p, fertileforager_p, infertileforager_p)
 Vg6
 #queen and infertile values are not significantly different from each other; all others are significantly different
+```
+
+### I next melt my existing data frame to fit it into the format required for a ggplot grouped bar graph, and then plot it.
+
+```{r}
 
 #selecting just the lists of gene IDs
 s <- mutate(s) %>% select(ID, queen, fertile, infertile, forager)
