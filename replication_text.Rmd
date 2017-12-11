@@ -19,9 +19,12 @@ library(knitr)
 # Replication of figures 1, 3, and 4 (and Table 1) of "Gene expression patterns associated with caste and reproductive status in ants: worker-specific genes are more derived than queen-specific ones" by Feldmeyer, Elsner, and Foitzik, 2013
 
 ## This paper involved sequencing total RNA from four different phenotypes of female ants that occur in colonies of *Temnothorax longispinosus* 
+
 ## This is interesting because ant colonies are composed of one or more queens and their numerous worker offspring, who are usually full-, or sometimes half-sibs in terms of parentage but who actually share 75% as opposed to 50% of their DNA with full-sibs due to haplodiploidy in ants. Nonetheless, these nearly identical genomes produce extremely different looking and behaving phenotypes, presumably based on patterns of gene expression.
 
-###I downloaded the gene expression spreadsheet they published and converted to csv. To do this had to combine two different sheets, one with just the expression values, and one with the p and fold change values, within the overall excel file so I could just use the one csv for all analyses.
+### I replicated a number of visualizations from the paper as well as a statistical inference in the form of NMDS analysis. 
+
+###I downloaded the gene expression spreadsheet they published and converted to csv. To do this had to combine two different sheets, one with just the expression values, and one with the p and fold change values, within the overall excel file so I could just use the one csv for all analyses. However, this did not necessitate changing any of the spreadsheet organisation. 
 
 ```{r}
 
@@ -81,20 +84,21 @@ b <- filter(a, queenfertile_p<0.05 & abs(queenfertile_fold)>2 | queeninfertile_p
 s <- mutate(b) %>% select(queen, fertile, infertile, forager)
 
 #performing nmds
-#s.mds <- metaMDS(s)
+s.mds <- metaMDS(s)
 
-#s.mds
+s.mds
 
 #plotting using points
-#plot(s.mds, type = "p")
+plot(s.mds, type = "p")
 
 #My NMDS plot is almost exactly the same as the published one, but mine is rotated in the opposite orientation
 
 #plotting using text to show that the red labels match up to their positions in the published figure.
-#plot(s.mds, type = "t")
+plot(s.mds, type = "t")
 
 
 ```
+
 ### When I filtered for genes that had p<0.05 and fc>2 for at least one of the six pairwise comparisons, I obtained an NMDS plot almost identical to the published version, except that it was rotated by a multiple of 90 degrees from the published orientation. This does not reflect any meaningful difference.
 
 # Figure 1b, Venn diagram
@@ -399,7 +403,9 @@ Total <- c(nrow(qfert), nrow(qinfert), nrow(qfor), nrow(fertq), nrow(fertinfert)
 Pair_specific <- c(nrow(q_fert), nrow(q_infert), nrow(q_for), nrow(fert_q), nrow(fert_infert), nrow(fert_for), nrow(infert_fert), nrow(infert_q), nrow(infert_for),nrow(for_q), nrow(for_fert), nrow(for_infert))
 
 #This will be the the row showing what percent of each gene set is unique to that comparison by dividing one vector by the other
-Pair_specific_percent <- Pair_specific/Total
+Pair_specific_percent <- signif(Pair_specific/Total, 2)
+Pair_specific_percent <- Pair_specific_percent * 100
+Pair_specific_percent <- paste(Pair_specific_percent, " %", sep="")
 
 #These vectors match the labels used in the published table
 Focal_caste <- c("Queen", "", "", "Fertile worker", "", "", "Infertile worker", "", "", "Forager", "", "")
@@ -411,6 +417,9 @@ table1 <- data.frame(Focal_caste, Comparison, Total, Pair_specific, Pair_specifi
 knitr::kable(table1)
 
 ```
+
+### Like several other figures, this table does not exactly match the published version in terms of numbers, although patterns are similar. The language describing what goes into this table seemed less ambiguous so this seemed to be the only way to sort the genes, and again, this was what the author described as the correct filtering technique. 
+
 
 # Figure 4, vitellogenin bar graph
 
