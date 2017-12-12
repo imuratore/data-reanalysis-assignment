@@ -136,7 +136,7 @@ for_nonzero <- mutate(for_nonzero) %>% select(ID)
 venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonzero$ID, Infertile=infert_nonzero$ID), "replication_venn0.tiff", fill = c("blue", "red", "yellow", "green"), cex=2, cat.cex=1.8) 
 ```
 
-<img src="replication_venn0.tiff".png" width="500px"/>
+<img src="img/replication_venn0.tiff".png" width="500px"/>
 
 ### This is VERY different from the published figure in that the most overlapping sections of the diagram have the highest numbers, with very few genes with the criteria used being expressed exclusively in individual castes. Therefore, I next tried testing for significance relative to the different categories in which each caste appeared; basically I filtered for significance relative to individual castes as opposed to in general. 
 
@@ -160,7 +160,7 @@ for_nonzero <- mutate(for_nonzero) %>% select(ID)
 venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonzero$ID, Infertile=infert_nonzero$ID), "replication_venn1.tiff", fill = c("blue", "red", "yellow", "green"), cex=2,cat.cex=1.8) 
 ```
 
-<img src="replication_venn1.tiff".png" width="500px"/>
+<img src="img/replication_venn1.tiff".png" width="500px"/>
 
 ### This diagram looks more similar to my first attempt than to the one in the paper. There are still too many shared genes and not enough private genees.
 
@@ -184,7 +184,7 @@ for_nonzero <- mutate(for_nonzero) %>% select(ID)
 venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonzero$ID, Infertile=infert_nonzero$ID), "replication_venn2.tiff", fill = c("blue", "red", "yellow", "green"), cex=3,cat.cex=1.8) 
 ```
 
-<img src="replication_venn2.tiff".png" width="500px"/>
+<img src="img/replication_venn2.tiff".png" width="500px"/>
 
 ### This attempt was more similar to the numbers in the published figure, but still off, so I also tried discarding the criterion of fc>2.
 
@@ -206,7 +206,7 @@ for_nonzero <- mutate(for_nonzero) %>% select(ID)
 venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonzero$ID, Infertile=infert_nonzero$ID), "replication_venn3.tiff", fill = c("blue", "red", "yellow", "green"), cex=3,cat.cex=1.8) 
 ```
 
-<img src="replication_venn3.tiff".png" width="500px"/>
+<img src="img/replication_venn3.tiff".png" width="500px"/>
 
 ### This version appears slightly more similar to the paper, although only for certain numbers. It is unclear which of my attempts best replicate the language used in describing the figure and it is unclear why many of these attempts are far off. 
 
@@ -232,7 +232,7 @@ venn.diagram(list(Queen=q_nonzero$ID, Forager=for_nonzero$ID, Fertile=fert_nonze
 
 ```
 
-<img src="replication_venn4.tiff".png" width="500px"/>
+<img src="img/replication_venn4.tiff".png" width="500px"/>
 
 ### Again this attempt has too many genes in the center regions and not enough on the outsides. It seems that overall the best replications were the second to last and third to last attempts. 
 
